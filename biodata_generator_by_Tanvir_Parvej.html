@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biodata Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #8B4513;
+            --secondary-color: #D2691E;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans Bengali', 'SolaimanLipi', 'Kalpurush', 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .form-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .preview-panel {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .panel-header h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .panel-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .download-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 20px;
+            display: block;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(139, 69, 19, 0.4);
+        }
+
+        /* Biodata Preview Styles */
+        #biodataPreview {
+            padding: 0;
+            background: #FFF8DC;
+            padding-bottom: 15px;
+        }
+
+        .biodata-border {
+            border: 5px double var(--primary-color);
+            margin: 5px;
+            padding: 0;
+            background: white;
+        }
+
+        .biodata-inner-border {
+            border: 2px solid var(--secondary-color);
+            margin: 3px;
+            padding: 8px;
+        }
+
+        .biodata-header {
+            text-align: center;
+            padding: 6px 10px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            margin: -8px -8px 8px -8px;
+            position: relative;
+        }
+
+        .biodata-header::before {
+            content: '📝';
+            font-size: 20px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .biodata-header h1 {
+            font-size: 18px;
+            margin-bottom: 2px;
+            font-weight: 400;
+            letter-spacing: 0px;
+            text-transform: uppercase;
+        }
+
+        .biodata-header p {
+            font-size: 10px;
+            opacity: 0.95;
+            font-style: italic;
+        }
+
+        .photo-section {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .photo-frame {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+            border: 3px solid var(--primary-color);
+            box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .photo-frame::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border: 2px solid var(--secondary-color);
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-placeholder {
+            font-size: 35px;
+            color: var(--primary-color);
+        }
+
+        .bio-section {
+            margin-bottom: 6px;
+        }
+
+        .bio-section-title {
+            font-size: 12px;
+            color: white;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            padding: 4px 10px;
+            margin-bottom: 5px;
+            font-weight: 400;
+            text-align: center;
+            letter-spacing: 0px;
+            border-radius: 3px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 5px;
+        }
+
+        .info-table tr {
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .info-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .info-table td {
+            padding: 4px 6px;
+            font-size: 10px;
+            line-height: 1.25;
+        }
+
+        .info-table td:first-child {
+            font-weight: 600;
+            color: var(--primary-color);
+            width: 40%;
+            text-align: left;
+        }
+
+        .info-table td:last-child {
+            color: #333;
+            width: 60%;
+            text-align: left;
+        }
+
+        .decorative-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--secondary-color), transparent);
+            margin: 5px 0;
+        }
+
+        .biodata-footer {
+            background: #FFF8DC;
+            padding: 6px;
+            text-align: center;
+            margin: 8px -8px -8px -8px;
+            border-top: 2px solid var(--secondary-color);
+        }
+
+        .biodata-footer h3 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .contact-box {
+            background: white;
+            border: 2px solid var(--secondary-color);
+            padding: 6px 10px;
+            margin: 0 auto;
+            max-width: 320px;
+            border-radius: 3px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin: 2px 0;
+            font-size: 10px;
+            color: #333;
+        }
+
+        .contact-icon {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .preview-panel {
+                position: relative;
+                top: 0;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .form-panel,
+            .download-btn {
+                display: none !important;
+            }
+
+            .preview-panel {
+                box-shadow: none;
+                max-height: none;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Form Panel -->
+        <div class="form-panel">
+            <div class="panel-header">
+                <h2>📝 বায়োডাটা তৈরি করুন</h2>
+                <p>Fill in the details to create your biodata</p>
+            </div>
+
+            <form id="biodataForm">
+                <!-- Theme Colors -->
+                <div class="form-section">
+                    <div class="section-title">🎨 থিম কালার (Theme Colors)</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>প্রাথমিক রঙ (Primary Color)</label>
+                            <input type="color" id="primaryColor" value="#8B4513">
+                        </div>
+                        <div class="form-group">
+                            <label>দ্বিতীয় রঙ (Secondary Color)</label>
+                            <input type="color" id="secondaryColor" value="#D2691E">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo URL -->
+                <div class="form-section">
+                    <div class="section-title">📷 ছবি (Photo)</div>
+                    <div class="form-group">
+                        <label>ছবি আপলোড করুন (Upload Photo)</label>
+                        <input type="file" id="photoUpload" accept="image/*" style="padding: 8px;">
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <div class="section-title">👤 ব্যক্তিগত তথ্য (Personal Information)</div>
+                    <div class="form-group">
+                        <label>নাম (Name) *</label>
+                        <input type="text" id="name" required placeholder="আপনার নাম লিখুন">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>জন্ম তারিখ (Date of Birth)</label>
+                            <input type="text" id="dob" placeholder="০৮/০১/১৯৯৮">
+                        </div>
+                        <div class="form-group">
+                            <label>বয়স (Age)</label>
+                            <input type="text" id="age" placeholder="২৭ বছর">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>উচ্চতা (Height)</label>
+                            <input type="text" id="height" placeholder="৫ ফুট ৭ ইঞ্চি">
+                        </div>
+                        <div class="form-group">
+                            <label>ওজন (Weight)</label>
+                            <input type="text" id="weight" placeholder="৭০ কেজি">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>বর্ণ (Complexion)</label>
+                            <input type="text" id="complexion" placeholder="ফর্সা">
+                        </div>
+                        <div class="form-group">
+                            <label>রক্তের গ্রুপ (Blood Group)</label>
+                            <input type="text" id="bloodGroup" placeholder="O+">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>ধর্ম (Religion)</label>
+                            <input type="text" id="religion" placeholder="ইসলাম">
+                        </div>
+                        <div class="form-group">
+                            <label>বর্ণ/সম্প্রদায় (Caste)</label>
+                            <input type="text" id="caste" placeholder="সুন্নী">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>বৈবাহিক অবস্থা (Marital Status)</label>
+                        <input type="text" id="maritalStatus" placeholder="অবিবাহিত">
+                    </div>
+                </div>
+
+                <!-- Education -->
+                <div class="form-section">
+                    <div class="section-title">🎓 শিক্ষাগত যোগ্যতা (Education)</div>
+                    <div class="form-group">
+                        <label>শিক্ষা (Education Qualification)</label>
+                        <textarea id="education" placeholder="ব্যাচেলর অফ বিজনেস অ্যাডমিনিস্ট্রেশন (বিবিএ), ২০২২"></textarea>
+                    </div>
+                </div>
+
+                <!-- Occupation -->
+                <div class="form-section">
+                    <div class="section-title">💼 পেশা (Occupation)</div>
+                    <div class="form-group">
+                        <label>পেশার বিবরণ (Occupation Details)</label>
+                        <textarea id="occupation" placeholder="সিনিয়র ম্যানেজার মার্কেটিং"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>মাসিক আয় (Monthly Income)</label>
+                        <input type="text" id="income" placeholder="৫০,০০০ টাকা">
+                    </div>
+                </div>
+
+                <!-- Family Information -->
+                <div class="form-section">
+                    <div class="section-title">🏠 পারিবারিক তথ্য (Family Information)</div>
+                    <div class="form-group">
+                        <label>পিতার নাম (Father's Name)</label>
+                        <input type="text" id="fatherName" placeholder="পিতার নাম">
+                    </div>
+                    <div class="form-group">
+                        <label>পিতার পেশা (Father's Occupation)</label>
+                        <input type="text" id="fatherOccupation" placeholder="পিতার পেশা">
+                    </div>
+                    <div class="form-group">
+                        <label>মাতার নাম (Mother's Name)</label>
+                        <input type="text" id="motherName" placeholder="মাতার নাম">
+                    </div>
+                    <div class="form-group">
+                        <label>মাতার পেশা (Mother's Occupation)</label>
+                        <input type="text" id="motherOccupation" placeholder="মাতার পেশা">
+                    </div>
+                    <div class="form-group">
+                        <label>ভাই-বোন (Siblings)</label>
+                        <input type="text" id="siblings" placeholder="১ ভাই, ১ বোন">
+                    </div>
+                    <div class="form-group">
+                        <label>পারিবারিক অবস্থা (Family Status)</label>
+                        <input type="text" id="familyStatus" placeholder="মধ্যবিত্ত">
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="form-section">
+                    <div class="section-title">📍 ঠিকানা (Address)</div>
+                    <div class="form-group">
+                        <label>বর্তমান ঠিকানা (Present Address)</label>
+                        <textarea id="presentAddress" placeholder="বর্তমান ঠিকানা লিখুন"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>স্থায়ী ঠিকানা (Permanent Address)</label>
+                        <textarea id="permanentAddress" placeholder="গ্রাম, থানা, জেলা"></textarea>
+                    </div>
+                </div>
+
+                <!-- Hobbies -->
+                <div class="form-section">
+                    <div class="section-title">🎯 শখ ও আগ্রহ (Hobbies & Interests)</div>
+                    <div class="form-group">
+                        <label>শখ (Hobbies)</label>
+                        <textarea id="hobbies" placeholder="বই পড়া, ভ্রমণ, খেলাধুলা"></textarea>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="form-section">
+                    <div class="section-title">📞 যোগাযোগ (Contact Information)</div>
+                    <div class="form-group">
+                        <label>মোবাইল নম্বর (Mobile Number)</label>
+                        <input type="tel" id="mobile" placeholder="০১৭৪৭২৮৬০৬৮">
+                    </div>
+                    <div class="form-group">
+                        <label>ইমেইল (Email)</label>
+                        <input type="email" id="email" placeholder="email@example.com">
+                    </div>
+                </div>
+
+                <button type="button" class="download-btn" onclick="downloadPDF()">
+                    📥 Download as PDF
+                </button>
+            </form>
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="preview-panel" id="biodataPreview">
+            <div class="biodata-border">
+                <div class="biodata-inner-border">
+                    <div class="biodata-header">
+                        <h1>জীবনবৃত্তান্ত</h1>
+                        <p>Biodata</p>
+                    </div>
+
+                    <div class="photo-section">
+                        <div class="photo-frame">
+                            <img id="previewPhoto" src="" alt="Profile Photo" style="display: none;">
+                            <span class="photo-placeholder" id="photoPlaceholder">👤</span>
+                        </div>
+                    </div>
+
+                    <div class="bio-section">
+                        <div class="bio-section-title">ব্যক্তিগত তথ্য / Personal Information</div>
+                        <table class="info-table">
+                            <tr>
+                                <td>নাম / Name</td>
+                                <td id="previewName">-</td>
+                            </tr>
+                            <tr>
+                                <td>জন্ম তারিখ / Date of Birth</td>
+                                <td id="previewDob">-</td>
+                            </tr>
+                            <tr>
+                                <td>বয়স / Age</td>
+                                <td id="previewAge">-</td>
+                            </tr>
+                            <tr>
+                                <td>উচ্চতা / Height</td>
+                                <td id="previewHeight">-</td>
+                            </tr>
+                            <tr>
+                                <td>ওজন / Weight</td>
+                                <td id="previewWeight">-</td>
+                            </tr>
+                            <tr>
+                                <td>বর্ণ / Complexion</td>
+                                <td id="previewComplexion">-</td>
+                            </tr>
+                            <tr>
+                                <td>রক্তের গ্রুপ / Blood Group</td>
+                                <td id="previewBloodGroup">-</td>
+                            </tr>
+                            <tr>
+                                <td>ধর্ম / Religion</td>
+                                <td id="previewReligion">-</td>
+                            </tr>
+                            <tr>
+                                <td>বর্ণ / Caste</td>
+                                <td id="previewCaste">-</td>
+                            </tr>
+                            <tr>
+                                <td>বৈবাহিক অবস্থা / Marital Status</td>
+                                <td id="previewMaritalStatus">-</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="decorative-line"></div>
+
+                    <div class="bio-section">
+                        <div class="bio-section-title">শিক্ষাগত যোগ্যতা / Educational Qualification</div>
+                        <table class="info-table">
+                            <tr>
+                                <td>শিক্ষা / Education</td>
+                                <td id="previewEducation">-</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="decorative-line"></div>
+
+                    <div class="bio-section">
+                        <div class="bio-section-title">পেশা ও শখ / Occupation & Hobbies</div>
+                        <table class="info-table">
+                            <tr>
+                                <td>পেশা / Occupation</td>
+                                <td id="previewOccupation">-</td>
+                            </tr>
+                            <tr>
+                                <td>মাসিক আয় / Monthly Income</td>
+                                <td id="previewIncome">-</td>
+                            </tr>
+                            <tr>
+                                <td>শখ / Hobbies</td>
+                                <td id="previewHobbies">-</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="decorative-line"></div>
+
+                    <div class="bio-section">
+                        <div class="bio-section-title">পারিবারিক তথ্য / Family Information</div>
+                        <table class="info-table">
+                            <tr>
+                                <td>পিতার নাম / Father's Name</td>
+                                <td id="previewFatherName">-</td>
+                            </tr>
+                            <tr>
+                                <td>পিতার পেশা / Father's Occupation</td>
+                                <td id="previewFatherOccupation">-</td>
+                            </tr>
+                            <tr>
+                                <td>মাতার নাম / Mother's Name</td>
+                                <td id="previewMotherName">-</td>
+                            </tr>
+                            <tr>
+                                <td>মাতার পেশা / Mother's Occupation</td>
+                                <td id="previewMotherOccupation">-</td>
+                            </tr>
+                            <tr>
+                                <td>ভাই-বোন / Siblings</td>
+                                <td id="previewSiblings">-</td>
+                            </tr>
+                            <tr>
+                                <td>পারিবারিক অবস্থা / Family Status</td>
+                                <td id="previewFamilyStatus">-</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="decorative-line"></div>
+
+                    <div class="bio-section">
+                        <div class="bio-section-title">ঠিকানা / Address</div>
+                        <table class="info-table">
+                            <tr>
+                                <td>বর্তমান ঠিকানা / Present</td>
+                                <td id="previewPresentAddress">-</td>
+                            </tr>
+                            <tr>
+                                <td>স্থায়ী ঠিকানা / Permanent</td>
+                                <td id="previewPermanentAddress">-</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="biodata-footer">
+                        <h3>যোগাযোগের তথ্য / Contact Information</h3>
+                        <div class="contact-box">
+                            <div class="contact-item">
+                                <span class="contact-icon">📱 Mobile:</span>
+                                <span id="previewMobile">-</span>
+                            </div>
+                            <div class="contact-item">
+                                <span class="contact-icon">✉️ Email:</span>
+                                <span id="previewEmail">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme color change functionality
+        const primaryColorInput = document.getElementById('primaryColor');
+        const secondaryColorInput = document.getElementById('secondaryColor');
+
+        primaryColorInput.addEventListener('input', function() {
+            document.documentElement.style.setProperty('--primary-color', this.value);
+        });
+
+        secondaryColorInput.addEventListener('input', function() {
+            document.documentElement.style.setProperty('--secondary-color', this.value);
+        });
+
+        // Photo upload functionality
+        const photoUpload = document.getElementById('photoUpload');
+        const previewPhoto = document.getElementById('previewPhoto');
+        const photoPlaceholder = document.getElementById('photoPlaceholder');
+
+        photoUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewPhoto.src = event.target.result;
+                    previewPhoto.style.display = 'block';
+                    photoPlaceholder.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Real-time preview update
+        const formFields = {
+            name: 'previewName',
+            dob: 'previewDob',
+            age: 'previewAge',
+            height: 'previewHeight',
+            weight: 'previewWeight',
+            complexion: 'previewComplexion',
+            bloodGroup: 'previewBloodGroup',
+            religion: 'previewReligion',
+            caste: 'previewCaste',
+            maritalStatus: 'previewMaritalStatus',
+            education: 'previewEducation',
+            occupation: 'previewOccupation',
+            income: 'previewIncome',
+            fatherName: 'previewFatherName',
+            fatherOccupation: 'previewFatherOccupation',
+            motherName: 'previewMotherName',
+            motherOccupation: 'previewMotherOccupation',
+            siblings: 'previewSiblings',
+            familyStatus: 'previewFamilyStatus',
+            presentAddress: 'previewPresentAddress',
+            permanentAddress: 'previewPermanentAddress',
+            hobbies: 'previewHobbies',
+            mobile: 'previewMobile',
+            email: 'previewEmail'
+        };
+
+        // Add input listeners
+        Object.keys(formFields).forEach(fieldId => {
+            const input = document.getElementById(fieldId);
+            if (input) {
+                input.addEventListener('input', function() {
+                    updatePreview(fieldId, this.value);
+                });
+            }
+        });
+
+        function updatePreview(fieldId, value) {
+            const previewId = formFields[fieldId];
+            const previewElement = document.getElementById(previewId);
+            
+            if (previewElement) {
+                previewElement.textContent = value || '-';
+            }
+        }
+
+        // Download PDF function
+        function downloadPDF() {
+            const element = document.getElementById('biodataPreview');
+            
+            // Store original styles
+            const originalOverflow = element.style.overflow;
+            const originalMaxHeight = element.style.maxHeight;
+            const originalPosition = element.style.position;
+            
+            // Temporarily remove constraints for PDF generation
+            element.style.overflow = 'visible';
+            element.style.maxHeight = 'none';
+            element.style.position = 'relative';
+            
+            const opt = {
+                margin: [3, 3, 3, 3],
+                filename: 'marriage-biodata.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2.5, 
+                    useCORS: true,
+                    scrollY: 0,
+                    scrollX: 0,
+                    windowHeight: element.scrollHeight,
+                    logging: false,
+                    letterRendering: true,
+                    allowTaint: true
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait'
+                }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Restore original styles after PDF generation
+                element.style.overflow = originalOverflow;
+                element.style.maxHeight = originalMaxHeight;
+                element.style.position = originalPosition;
+            });
+        }
+    </script>
+</body>
+</html>
